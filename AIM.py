@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.integrate import quad
 
 class Grid(object):
     def __init__(self, gridLines, size = 1):
@@ -80,6 +81,11 @@ def sampleCircle(npts):
     pts /= 2.0
 
     return pts
+
+def q_matrix_element(r0, ri, rf, ms):
+    assert len(r0) == len(ri) == len(rf) == len(ms)
+    func = lambda t: np.prod(np.power((1-t)*ri + t*rf-r0, ms))
+    return quad(func, 0, 1)[0]
 
 class Linktable(object):
     def __init__(self, grid, pts):
