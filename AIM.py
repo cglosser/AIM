@@ -5,7 +5,7 @@ from collections import namedtuple
 
 BasisFunction = namedtuple("BasisFunction", ["begin", "end", "mid"])
 
-class GridCoordinate(object):
+class GridNode(object):
     def __init__(self, num_cols, point):
         self.num_cols = num_cols
         self.point    = np.array(point).astype(int)
@@ -13,10 +13,10 @@ class GridCoordinate(object):
     def __add__(self, other):
         if isinstance(other, self.__class__):
             if self.num_cols != other.num_cols:
-                raise Exception("Column mismatch in GridCoordinate addition")
-            return GridCoordinate(self.num_cols, self.point + other.point)
+                raise Exception("Column mismatch in GridNode addition")
+            return GridNode(self.num_cols, self.point + other.point)
         else:
-            return GridCoordinate(self.num_cols, 
+            return GridNode(self.num_cols, 
                     self.point + np.array(other).astype(int))
 
     def __str__(self):
@@ -26,83 +26,73 @@ class GridCoordinate(object):
         return self.point[1]*self.num_cols + self.point[0]
 
 class Grid(object):
-    def __init__(self, gridLines, size = 1):
+    def __init__(self, grid_lines, size = 1):
         self.size = size
-        self.gridDim = gridLines
-        self.numPts  = gridLines**2
-        self.gridSpacing = size/float(gridLines - 1) #step size
+        self.grid_dim = grid_lines
+        self.num_pts  = grid_lines**2
+        self.grid_spacing = size/float(grid_lines - 1) #step size
         self.boxes = None
-        self.gridPts = np.array([(x,y) for y in range(self.gridDim)
-            for x in range(self.gridDim)])/float(self.gridDim - 1)
+        self.grid_points = np.array([(x, y) for y in range(self.grid_dim)
+            for x in range(self.grid_dim)])/float(self.grid_dim - 1)
         
-    def __boundsCheck(self, pt):
+    def __boundsCheck(self, points):
         """
         Check that all x,y pairs lie within [0, 1]. Should make this an exception
         """
-        assert (np.all(pt <= self.size) and np.all(pt >= 0.0), 
-                "point lies outside the grid")
+        assert np.all(points <= self.size) and np.all(points >= 0.0), \
+                "point lies outside the grid"
 
-    def anchorGridCoord(self, pt):
-        """
-        Returns the GridCoordinate of the grid point to the south west of pt.
-        """
-        self.__boundsCheck(pt)
-        anchor = np.floor(pt/self.gridSpacing).astype(int)
-        return GridCoordinate(self.gridDim, anchor)
+    def anchor_node(self, point):
+        """Compute the GridNode of the grid point to the south west of pt."""
+        self.__boundsCheck(point)
+        anchor = np.floor(point/self.grid_spacing).astype(int)
+        return GridNode(self.grid_dim, anchor)
     
-    def boxGridCoords(self, pt):
-        """
-        Return the four GridCoordinates of the box enclosing pt
-        """
-        anchor = self.anchorGridCoord(pt)
+    def box_nodes(self, point):
+        """Compute the four GridNodes of the box enclosing point"""
+        anchor = self.anchor_node(point)
         return [anchor + [dx, dy] for dy in range(0, 2) for dx in range(0, 2)]
 
-    def drawPoints(self, ax = None):
-        if ax is None: ax = plt.gca()
-        x, y = zip(*self.gridPts)
-        ax.scatter(x, y, s=100, alpha=0.2)
-        return ax
+    def draw_points(self, axis = None):
+        if axis is None: 
+            axis = plt.gca()
+        x_coords, y_coords = self.grid_points.transpose()
+        axis.scatter(x_coords, y_coords, s=100, alpha=0.2)
+        return axis
     
-    def drawLines(self, ax = None):
-        if ax is None: ax = plt.gca()
-        x, y = zip(*self.gridPts)
-        ax.set_xticks(x); ax.set_yticks(y)
-        ax.grid()
-        return ax
+    def draw_lines(self, axis = None):
+        if axis is None: 
+            axis = plt.gca()
+        x_coords, y_coords = self.grid_points.transpose()
+        axis.set_xticks(x_coords)
+        axis.set_yticks(y_coords)
+        axis.grid()
+        return axis
 
-    def annotatePoints(self, ax = None):
-        if ax is None: ax = plt.gca()
-        for idx, pt in enumerate(self.gridPts): ax.annotate(idx, pt)
-        return ax
+    def annotate_points(self, axis = None):
+        if axis is None:
+            axis = plt.gca()
+        for idx, point in enumerate(self.grid_points): 
+            axis.annotate(idx, point)
+        return axis
 
         
-def drawObjectAndGrid(pts, grid):
-    fig = plt.figure(); f1 = fig.add_subplot(111)
+def draw_object_and_grid(points, grid):
+    fig    = plt.figure()
+    subfig = fig.add_subplot(111)
 
-    x_obj,  y_obj  = zip(*pts)
-    x_grid, y_grid = zip(*grid.gridPts)
+    x_obj,  y_obj  = points.transpose()
+    x_grid, y_grid = grid.grid_points.transpose()
     
-    f1.scatter(x_obj, y_obj, s=25, c='r', alpha=0.8)
-    f1.scatter(x_grid, y_grid, s=100, alpha=0.2)
+    subfig.scatter(x_obj, y_obj, s=25, c='r', alpha=0.8)
+    subfig.scatter(x_grid, y_grid, s=100, alpha=0.2)
     
-def drawObjectToGrid(grid, pts, ax = None):
-    if ax is None: ax = plt.gca()
-    
-    x_obj,  y_obj  = zip(*pts)
-    x_grid, y_grid = zip(*grid.gridPts)
-
-    ax.scatter(x_obj, y_obj, c='r', s=25, alpha=0.8)
-
-    for p in pts:
-        nearestGrid = grid.nearestGridCoord(p)*grid.gridSpacing
-        ax.plot([p[0], nearestGrid[0]], [p[1], nearestGrid[1]], 'r')
-
-def sampleCircle(npts):
+def sample_circle(num_pts):
     pts = np.array([(np.cos(t), np.sin(t)) 
-        for t in np.arange(0, 2*np.pi, 2*np.pi/npts)])
+        for t in np.arange(0, 2*np.pi, 2*np.pi/num_pts)])
 
     #shift to first quadrant
-    pts += np.array([1,1])
+    pts += np.array([1, 1])
     pts /= 2.0
 
     return pts
@@ -126,11 +116,3 @@ def q_matrix_element(m_vec, basis_func):
 
 def w_matrix_element(m_vec, basis_func, u_vec):
     return np.prod(np.power(u_vec - basis_func.mid, m_vec))
-
-class Linktable(object):
-    def __init__(self, grid, pts):
-        self.grid = grid; self.pts = pts
-        self.gridLookup  = [grid.nearestGridIdx(p) for p in pts]
-        self.pointLookup = [[] for _ in range(grid.numPts)]
-        for idx, p in enumerate(self.gridLookup):
-            self.pointLookup[p].append(idx)
