@@ -1,6 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import quad
+from collections import namedtuple
+
+BasisFunction = namedtuple("BasisFunction", ["begin", "end", "mid"])
 
 class GridCoordinate(object):
     def __init__(self, numCols, pt):
@@ -102,16 +105,25 @@ def sampleCircle(npts):
 
     return pts
 
-def q_matrix_element(ms, ri, rf, r0 = None):
-    if r0 is None:
-        r0 = np.add(ri, rf)/2.0 #assume r0 at the center of the basis segment 
-    assert len(ms) == len(ri) == len(rf) == len(r0)
-    func = lambda t: np.prod(np.power((1-t)*ri + t*rf-r0, ms))
+def sample_to_basis(pts):
+    """Build a collection of rect (pulse) basis functions.
+    
+    Given a closed set of input points, convert each adjacent pair to a rect 
+    basis function defined by begining (given), end (given), and mid (average 
+    of begining and end) points.
+    """
+    return [BasisFunction(begin=x1, end=x2, mid=(x1 + x2)/2.0) 
+        for x1, x2 in zip(pts, np.roll(pts, -1, axis = 0))]
+
+def q_matrix_element(m_vec, basis_func):
+    if np.all(m_vec == 0):
+        return 1 #integrating 1 from t = 0 to t = 1
+    func = lambda t: np.prod(np.power((1-t)*basis_func.begin + 
+        t*basis_func.end-basis_func.mid, m_vec))
     return quad(func, 0, 1)
 
-def w_matrix_element(r0, ms, us):
-    assert len(r0) == len(ms) == len(us)
-    return np.prod(np.power(us - r0, ms))
+def w_matrix_element(m_vec, basis_func, u_vec):
+    return np.prod(np.power(u_vec - basis_func.mid, m_vec))
 
 class Linktable(object):
     def __init__(self, grid, pts):
