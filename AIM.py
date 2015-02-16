@@ -2,6 +2,26 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.integrate import quad
 
+class GridCoordinate(object):
+    def __init__(self, numCols, pt):
+        self.numCols = numCols
+        self.pt      = np.array(pt).astype(int)
+
+    def __add__(self, other):
+        if isinstance(other, self.__class__):
+            if self.numCols != other.numCols:
+                raise Exception("Column mismatch in GridCoordinate addition")
+            return GridCoordinate(self.numCols, self.pt + other.pt)
+        else:
+            npOther = np.array(other).astype(int)
+            return GridCoordinate(self.numCols, self.pt + npOther)
+
+    def __str__(self):
+        return str(self.pt)
+
+    def toIndex(self):
+        return self.pt[1]*self.numCols + self.pt[0]
+
 class Grid(object):
     def __init__(self, gridLines, size = 1):
         self.size = size
@@ -12,26 +32,26 @@ class Grid(object):
         self.gridPts = np.array([(x,y) for y in range(self.gridDim)
             for x in range(self.gridDim)])/float(self.gridDim - 1)
         
-    def boxIndexToCoord(self, idx):
-        assert idx >= 0, "invalid box index"
-        row = idx//self.gridDim
-        col = idx - row*self.gridDim
-        return np.array([row, col])
-        
-    def boxCoordToIndex(self, coord):
-        row, col = coord
-        return col*self.gridDim + row
-    
-    def nearestGridCoord(self, pt):
+    def __boundsCheck(self, pt):
         """
-        Get the x,y pair of the nearest gridpoint in integral grid coordinates
+        Check that all x,y pairs lie within [0, 1]. Should make this an exception
         """
-        assert np.all(pt <= self.size) and np.all(pt >= 0.0), "point lies outside of the grid"
-        return np.round(pt/self.gridSpacing).astype(int)
+        assert np.all(pt <= self.size) and np.all(pt >= 0.0), "point lies outside the grid"
 
-    def nearestGridIdx(self, pt):
-        assert np.all(pt <= self.size) and np.all(pt >= 0.0), "point lies outside of the grid"
-        return self.boxCoordToIndex(self.nearestGridCoord(pt))
+    def anchorGridCoord(self, pt):
+        """
+        Returns the GridCoordinate of the grid point to the south west of pt.
+        """
+        self.__boundsCheck(pt)
+        anchor = np.floor(pt/self.gridSpacing).astype(int)
+        return GridCoordinate(self.gridDim, anchor)
+    
+    def boxGridCoords(self, pt):
+        """
+        Return the four GridCoordinates of the box enclosing pt
+        """
+        anchor = self.anchorGridCoord(pt)
+        return [anchor + [dx, dy] for dy in range(0, 2) for dx in range(0, 2)]
 
     def drawPoints(self, ax = None):
         if ax is None: ax = plt.gca()
@@ -82,10 +102,16 @@ def sampleCircle(npts):
 
     return pts
 
-def q_matrix_element(r0, ri, rf, ms):
-    assert len(r0) == len(ri) == len(rf) == len(ms)
+def q_matrix_element(ms, ri, rf, r0 = None):
+    if r0 is None:
+        r0 = np.add(ri, rf)/2.0 #assume r0 at the center of the basis segment 
+    assert len(ms) == len(ri) == len(rf) == len(r0)
     func = lambda t: np.prod(np.power((1-t)*ri + t*rf-r0, ms))
-    return quad(func, 0, 1)[0]
+    return quad(func, 0, 1)
+
+def w_matrix_element(r0, ms, us):
+    assert len(r0) == len(ms) == len(us)
+    return np.prod(np.power(us - r0, ms))
 
 class Linktable(object):
     def __init__(self, grid, pts):
