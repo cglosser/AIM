@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from scipy.integrate import quad
 from collections import namedtuple
 
-BasisFunction = namedtuple("BasisFunction", ["begin", "end", "mid"])
+BasisFunction = namedtuple("BasisFunction", ["start", "end", "mid"])
 
 class GridNode(object):
     def __init__(self, num_cols, point):
@@ -53,6 +53,16 @@ class Grid(object):
         anchor = self.anchor_node(point)
         return [anchor + [dx, dy] for dy in range(0, 2) for dx in range(0, 2)]
 
+    def get_anchors(self, basis_funcs):
+        """Build a list of anchor nodes corresponding to each basis function.
+
+        The point at the south-west corner of each box uniquely indexes the
+        box. This function builds a list of the appropriate GridNode for each
+        basis function.
+        """
+        return [self.anchor_node(basis_func.mid)
+                for basis_func in basis_funcs]
+
     def draw_points(self, axis = None):
         if axis is None: 
             axis = plt.gca()
@@ -101,16 +111,16 @@ def sample_to_basis(pts):
     """Build a collection of rect (pulse) basis functions.
     
     Given a closed set of input points, convert each adjacent pair to a rect 
-    basis function defined by begining (given), end (given), and mid (average 
-    of begining and end) points.
+    basis function defined by start (given), end (given), and mid (average 
+    of start and end) points.
     """
-    return [BasisFunction(begin=x1, end=x2, mid=(x1 + x2)/2.0) 
+    return [BasisFunction(start=x1, end=x2, mid=(x1 + x2)/2.0) 
         for x1, x2 in zip(pts, np.roll(pts, -1, axis = 0))]
 
 def q_matrix_element(m_vec, basis_func):
     if np.all(m_vec == 0):
         return 1 #integrating 1 from t = 0 to t = 1 -- easy analytic form
-    func = lambda t: np.prod(np.power((1-t)*basis_func.begin + 
+    func = lambda t: np.prod(np.power((1-t)*basis_func.start + 
         t*basis_func.end - basis_func.mid, m_vec))
     return quad(func, 0, 1)[0]
 
