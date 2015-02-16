@@ -36,8 +36,8 @@ class Grid(object):
             for x in range(self.grid_dim)])/float(self.grid_dim - 1)
         
     def __boundsCheck(self, points):
-        """
-        Check that all x,y pairs lie within [0, 1]. Should make this an exception
+        """Check that all x,y pairs lie within [0, 1]. 
+        Should make this an exception
         """
         assert np.all(points <= self.size) and np.all(points >= 0.0), \
                 "point lies outside the grid"
@@ -112,7 +112,7 @@ def q_matrix_element(m_vec, basis_func):
         return 1 #integrating 1 from t = 0 to t = 1 -- easy analytic form
     func = lambda t: np.prod(np.power((1-t)*basis_func.begin + 
         t*basis_func.end - basis_func.mid, m_vec))
-    return quad(func, 0, 1)
+    return quad(func, 0, 1)[0]
 
 def w_matrix_element(m_vec, basis_func, u_vec):
     return np.prod(np.power(u_vec - basis_func.mid, m_vec))
