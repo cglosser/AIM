@@ -6,24 +6,24 @@ from collections import namedtuple
 BasisFunction = namedtuple("BasisFunction", ["begin", "end", "mid"])
 
 class GridCoordinate(object):
-    def __init__(self, numCols, pt):
-        self.numCols = numCols
-        self.pt      = np.array(pt).astype(int)
+    def __init__(self, num_cols, point):
+        self.num_cols = num_cols
+        self.point    = np.array(point).astype(int)
 
     def __add__(self, other):
         if isinstance(other, self.__class__):
-            if self.numCols != other.numCols:
+            if self.num_cols != other.num_cols:
                 raise Exception("Column mismatch in GridCoordinate addition")
-            return GridCoordinate(self.numCols, self.pt + other.pt)
+            return GridCoordinate(self.num_cols, self.point + other.point)
         else:
-            npOther = np.array(other).astype(int)
-            return GridCoordinate(self.numCols, self.pt + npOther)
+            return GridCoordinate(self.num_cols, 
+                    self.point + np.array(other).astype(int))
 
     def __str__(self):
-        return str(self.pt)
+        return str(self.point)
 
-    def toIndex(self):
-        return self.pt[1]*self.numCols + self.pt[0]
+    def to_index(self):
+        return self.point[1]*self.num_cols + self.point[0]
 
 class Grid(object):
     def __init__(self, gridLines, size = 1):
@@ -39,7 +39,8 @@ class Grid(object):
         """
         Check that all x,y pairs lie within [0, 1]. Should make this an exception
         """
-        assert np.all(pt <= self.size) and np.all(pt >= 0.0), "point lies outside the grid"
+        assert (np.all(pt <= self.size) and np.all(pt >= 0.0), 
+                "point lies outside the grid")
 
     def anchorGridCoord(self, pt):
         """
@@ -97,7 +98,8 @@ def drawObjectToGrid(grid, pts, ax = None):
         ax.plot([p[0], nearestGrid[0]], [p[1], nearestGrid[1]], 'r')
 
 def sampleCircle(npts):
-    pts = np.array([(np.cos(t), np.sin(t)) for t in np.arange(0, 2*np.pi, 2*np.pi/npts)])
+    pts = np.array([(np.cos(t), np.sin(t)) 
+        for t in np.arange(0, 2*np.pi, 2*np.pi/npts)])
 
     #shift to first quadrant
     pts += np.array([1,1])
