@@ -117,9 +117,9 @@ def sample_to_basis(pts):
 
 def q_matrix_element(m_vec, basis_func):
     if np.all(m_vec == 0):
-        return 1 #integrating 1 from t = 0 to t = 1
+        return 1 #integrating 1 from t = 0 to t = 1 -- easy analytic form
     func = lambda t: np.prod(np.power((1-t)*basis_func.begin + 
-        t*basis_func.end-basis_func.mid, m_vec))
+        t*basis_func.end - basis_func.mid, m_vec))
     return quad(func, 0, 1)
 
 def w_matrix_element(m_vec, basis_func, u_vec):
