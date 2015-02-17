@@ -89,12 +89,25 @@ def sample_to_basis(pts):
     return [BasisFunction(start=x1, end=x2, mid=(x1 + x2)/2.0) 
         for x1, x2 in zip(pts, np.roll(pts, -1, axis = 0))]
 
-def q_matrix_element(m_vec, basis_func):
+def rhs_q_matrix_element(m_vec, basis_func):
     if np.all(m_vec == 0):
         return 1 #integrating 1 from t = 0 to t = 1 -- easy analytic form
     func = lambda t: np.prod(np.power((1-t)*basis_func.start + 
         t*basis_func.end - basis_func.mid, m_vec))
     return quad(func, 0, 1)[0]
 
-def w_matrix_element(m_vec, basis_func, u_vec):
-    return np.prod(np.power(u_vec - basis_func.mid, m_vec))
+def lhs_w_matrix_element(m_vec, u_vec, expansion_point):
+    return np.prod(np.power(u_vec - expansion_point, m_vec))
+
+def find_grid_mapping(grid, basis_func):
+    box_nodes = grid.box_nodes(basis_func.mid)
+    combo_m = [(mx, my) for my in range(2) for mx in range(2)]
+
+    lhs = np.array([[lhs_w_matrix_element(m_vec, basis_func.mid,
+        corner.location) for m_vec in combo_m] 
+        for corner in box_nodes])
+
+    rhs = np.array([rhs_q_matrix_element(m_vec, basis_func) 
+        for m_vec in combo_m])
+
+    return np.linalg.solve(lhs, rhs)
