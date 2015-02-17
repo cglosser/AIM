@@ -31,7 +31,7 @@ class Grid(object):
     def box_nodes(self, point):
         """Compute the four Nodes of the box enclosing point"""
         anchor = self.anchor(point)
-        indices = [self.nodes[self.__node_index(anchor.location +
+        indices = [self.nodes[self.__node_index(anchor.location + 
             np.array([dx, dy]))] for dy in range(0, 2) for dx in range(0, 2)]
         return indices
 
@@ -68,18 +68,21 @@ def draw_object_and_grid(points, grid):
     
     subfig.scatter(x_obj, y_obj, s=25, c='r', alpha=0.8)
     subfig.scatter(x_grid, y_grid, s=100, alpha=0.2)
+
+def shift_to_first_quadrant(points):
+    x_bounds = np.array([np.min(points[:, 0]), np.max(points[:, 0])])
+    y_bounds = np.array([np.min(points[:, 1]), np.max(points[:, 1])])
+    x_span, y_span = x_bounds[1] - x_bounds[0], y_bounds[1] - y_bounds[0]
+
+    scale_factor = np.max([x_span, y_span])
+    return (points - np.array([x_bounds[0], y_bounds[0]]))/scale_factor
     
-def sample_circle(num_pts):
-    pts = np.array([(np.cos(t), np.sin(t)) 
+def sample_unit_circle(num_pts):
+    """ Sample a circle of diameter = 1 in the first quadrant."""
+    return np.array([(np.cos(t), np.sin(t)) 
         for t in np.arange(0, 2*np.pi, 2*np.pi/num_pts)])
 
-    #shift to first quadrant
-    pts += np.array([1, 1])
-    pts /= 2.0
-
-    return pts
-
-def sample_to_basis(pts):
+def build_basis_set(pts):
     """Build a collection of rect (pulse) basis functions.
     
     Given a closed set of input points, convert each adjacent pair to a rect 
