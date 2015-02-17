@@ -5,63 +5,35 @@ from collections import namedtuple
 
 BasisFunction = namedtuple("BasisFunction", ["start", "end", "mid"])
 
-class GridNode(object):
-    def __init__(self, num_cols, point):
-        self.num_cols = num_cols
-        self.point    = np.array(point).astype(int)
-
-    def __add__(self, other):
-        if isinstance(other, self.__class__):
-            if self.num_cols != other.num_cols:
-                raise Exception("Column mismatch in GridNode addition")
-            return GridNode(self.num_cols, self.point + other.point)
-        else:
-            return GridNode(self.num_cols, 
-                    self.point + np.array(other).astype(int))
-
-    def __str__(self):
-        return str(self.point)
-
-    def to_index(self):
-        return self.point[1]*self.num_cols + self.point[0]
-
 class Grid(object):
-    def __init__(self, grid_lines, size = 1):
-        self.size = size
-        self.grid_dim = grid_lines
-        self.num_pts  = grid_lines**2
-        self.grid_spacing = size/float(grid_lines - 1) #step size
-        self.boxes = None
-        self.grid_points = np.array([(x, y) for y in range(self.grid_dim)
-            for x in range(self.grid_dim)])/float(self.grid_dim - 1)
-        
-    def __boundsCheck(self, points):
-        """Check that all x,y pairs lie within [0, 1]. 
-        Should make this an exception
-        """
-        assert np.all(points <= self.size) and np.all(points >= 0.0), \
-                "point lies outside the grid"
+    Node = namedtuple("Node", ["location","index"])
 
-    def anchor_node(self, point):
-        """Compute the GridNode of the grid point to the south west of pt."""
-        self.__boundsCheck(point)
+    def __init__(self, grid_dim, size = 1):
+        self.size         = size
+        self.grid_dim     = grid_dim
+        self.grid_spacing = size/float(grid_dim - 1)
+
+        self.nodes = [Grid.Node(np.array([x, y]), x + grid_dim*y)
+                for y in range(grid_dim) for x in range(grid_dim)]
+
+        self.grid_points = np.array([node.location/float(grid_dim - 1)
+                for node in self.nodes])
+
+    def __node_index(self, location):
+        """Convert an integral (r, c) grid coordinate to its unique index."""
+        return location[0] + self.grid_dim*location[1]
+        
+    def anchor(self, point):
+        """Compute the Node of the grid point to the south west of point"""
         anchor = np.floor(point/self.grid_spacing).astype(int)
-        return GridNode(self.grid_dim, anchor)
+        return self.nodes[self.__node_index(anchor)]
     
     def box_nodes(self, point):
-        """Compute the four GridNodes of the box enclosing point"""
-        anchor = self.anchor_node(point)
-        return [anchor + [dx, dy] for dy in range(0, 2) for dx in range(0, 2)]
-
-    def get_anchors(self, basis_funcs):
-        """Build a list of anchor nodes corresponding to each basis function.
-
-        The point at the south-west corner of each box uniquely indexes the
-        box. This function builds a list of the appropriate GridNode for each
-        basis function.
-        """
-        return [self.anchor_node(basis_func.mid)
-                for basis_func in basis_funcs]
+        """Compute the four Nodes of the box enclosing point"""
+        anchor = self.anchor(point)
+        indices = [self.nodes[self.__node_index(anchor.location +
+            np.array([dx, dy]))] for dy in range(0, 2) for dx in range(0, 2)]
+        return indices
 
     def draw_points(self, axis = None):
         if axis is None: 
