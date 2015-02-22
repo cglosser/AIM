@@ -26,14 +26,17 @@ class Grid(object):
         return location[0] + self.grid_dim*location[1]
         
     def anchor(self, pos):
-        """Return the Node corresponding to the nearest grid point south west of pos."""
+        """Return the Node corresponding to the nearest grid 
+        point south west of pos.
+        """
         anchor = np.floor(pos/self.grid_spacing).astype(int)
         return self.nodes[self.__node_index(anchor)]
     
     def box_nodes(self, point, degree = 0):
         """Compute the indices of Nodes enclosing point. The degree defines
         the "box radius" for the indices (degree == 0 means the four nearest
-        corners, degree == 1 gives the next twelve points and so on)."""
+        corners, degree == 1 gives the next twelve points and so on).
+        """
         delta_range = range(-degree, degree + 2)
         anchor_loc = self.anchor(point).location
         indices = [self.nodes[self.__node_index(anchor_loc + 
