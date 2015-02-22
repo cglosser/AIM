@@ -109,23 +109,27 @@ def build_basis_set(pts):
         for x1, x2 in point_pairs]
 
 def rhs_q_matrix_element(m_vec, basis_func):
-    if np.all(m_vec == 0):
-        return 1 #integrating 1 from t = 0 to t = 1 -- easy analytic form
-    else:
-        func = lambda t: np.prod(np.power((1-t)*basis_func.start + 
-            t*basis_func.end - basis_func.mid, m_vec))
-        return quad(func, 0, 1)[0]
+    func = lambda t: np.prod(np.power((1-t)*basis_func.start + 
+        t*basis_func.end - basis_func.mid, m_vec))
+    return quad(func, 0, 1)[0]
 
 def lhs_w_matrix_element(m_vec, u_vec, expansion_point):
     return np.prod(np.power(u_vec - expansion_point, m_vec))
 
-def find_grid_mapping(grid, basis_func):
-    box_nodes = grid.box_nodes(basis_func.mid)
-    combo_m = [(mx, my) for my in range(2) for mx in range(2)]
+def find_grid_mapping(grid, basis_func, degree = 0):
+    point_range = range(degree + 2)
+    combo_m = [(mx, my) for my in point_range for mx in point_range]
 
-    lhs = np.array([[lhs_w_matrix_element(m_vec, basis_func.mid,
-        corner.location) for m_vec in combo_m] 
-        for corner in box_nodes])
+    box_nodes = grid.box_nodes(basis_func.mid, degree)
+
+    abs_loc = lambda x: grid.absolute_location(x)
+    lhs = np.array([
+        [lhs_w_matrix_element(m_pair, basis_func.mid, abs_loc(node.location)) 
+            for node in box_nodes]
+            for m_pair in combo_m 
+    ])
+
+    print lhs
 
     rhs = np.array([rhs_q_matrix_element(m_vec, basis_func) 
         for m_vec in combo_m])
