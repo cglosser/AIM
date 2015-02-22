@@ -22,19 +22,22 @@ class Grid(object):
                 for node in self.nodes])
 
     def __node_index(self, location):
-        """Convert an integral (r, c) grid coordinate to its unique index."""
+        """Convert an integral (x, y) grid coordinate to its unique index."""
         return location[0] + self.grid_dim*location[1]
         
-    def anchor(self, point):
-        """Compute the Node of the grid point to the south west of point"""
-        anchor = np.floor(point/self.grid_spacing).astype(int)
+    def anchor(self, pos):
+        """Return the Node corresponding to the nearest grid point south west of pos."""
+        anchor = np.floor(pos/self.grid_spacing).astype(int)
         return self.nodes[self.__node_index(anchor)]
     
-    def box_nodes(self, point):
-        """Compute the four Nodes of the box enclosing point"""
-        anchor = self.anchor(point)
-        indices = [self.nodes[self.__node_index(anchor.location + 
-            np.array([dx, dy]))] for dy in range(0, 2) for dx in range(0, 2)]
+    def box_nodes(self, point, degree = 0):
+        """Compute the indices of Nodes enclosing point. The degree defines
+        the "box radius" for the indices (degree == 0 means the four nearest
+        corners, degree == 1 gives the next twelve points and so on)."""
+        delta_range = range(-degree, degree + 2)
+        anchor_loc = self.anchor(point).location
+        indices = [self.nodes[self.__node_index(anchor_loc + 
+            np.array([dx, dy]))] for dy in delta_range for dx in delta_range]
         return indices
 
     def draw_points(self, axis = None):
