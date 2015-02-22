@@ -15,7 +15,7 @@ class Grid(object):
         self.grid_dim     = grid_dim
         self.grid_spacing = size/float(grid_dim - 1)
 
-        self.nodes = [Grid.Node(np.array([x, y]), x + grid_dim*y)
+        self.nodes = [Grid.Node(np.array([x, y]), self.__node_index([x, y]))
                 for y in range(grid_dim) for x in range(grid_dim)]
 
         self.grid_points = np.array([node.location/float(grid_dim - 1)
