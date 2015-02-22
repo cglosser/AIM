@@ -19,12 +19,16 @@ class Grid(object):
         self.nodes = [Grid.Node(np.array([x, y]), self.__node_index([x, y]))
                 for y in range(grid_dim) for x in range(grid_dim)]
 
-        self.grid_points = np.array([node.location/float(grid_dim - 1)
+        self.grid_points = np.array([self.absolute_location(node.location)
                 for node in self.nodes])
 
     def __node_index(self, location):
         """Convert an integral (x, y) grid coordinate to its unique index."""
         return location[0] + self.grid_dim*location[1]
+
+    def absolute_location(self, grid_coord):
+        """Give the absolute box location of integral grid coordinates."""
+        return grid_coord/float(self.grid_dim - 1)
         
     def anchor(self, pos):
         """Return the Node corresponding to the nearest grid 
