@@ -1,8 +1,9 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy.linalg    import norm
 from scipy.integrate import quad
-from scipy.special import hankel2
-from collections import namedtuple
+from scipy.special   import hankel2
+from collections     import namedtuple
 
 BasisFunction = namedtuple("BasisFunction", ["start", "end", "mid"])
 
@@ -66,8 +67,8 @@ class Grid(object):
             axis.annotate(idx, point)
         return axis
 
-def green_2d(k, rho1, rho2):
-    return hankel2(0, k*np.norm(rho1 - rho2))/4j
+def green_2d(k, vec_1, vec_2):
+    return hankel2(0, k*norm(vec_1 - vec_2))/4j
         
 def draw_object_and_grid(points, grid):
     fig    = plt.figure()
