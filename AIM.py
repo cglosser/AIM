@@ -86,8 +86,8 @@ def shift_to_first_quadrant(points):
     
 def sample_unit_circle(num_pts):
     """ Sample a circle of diameter = 1 in the first quadrant."""
-    return np.array([(np.cos(t), np.sin(t)) 
-        for t in np.arange(0, 2*np.pi, 2*np.pi/num_pts)])
+    angles = np.arange(0, 2*np.pi, 2*np.pi/num_pts)
+    return np.array([(np.cos(theta), np.sin(theta)) for theta in angles])
 
 def build_basis_set(pts):
     """Build a collection of rect (pulse) basis functions.
@@ -96,15 +96,17 @@ def build_basis_set(pts):
     basis function defined by start (given), end (given), and mid (average 
     of start and end) points.
     """
+    point_pairs = zip(pts, np.roll(pts, -1, axis = 0))
     return [BasisFunction(start=x1, end=x2, mid=(x1 + x2)/2.0) 
-        for x1, x2 in zip(pts, np.roll(pts, -1, axis = 0))]
+        for x1, x2 in point_pairs]
 
 def rhs_q_matrix_element(m_vec, basis_func):
     if np.all(m_vec == 0):
         return 1 #integrating 1 from t = 0 to t = 1 -- easy analytic form
-    func = lambda t: np.prod(np.power((1-t)*basis_func.start + 
-        t*basis_func.end - basis_func.mid, m_vec))
-    return quad(func, 0, 1)[0]
+    else:
+        func = lambda t: np.prod(np.power((1-t)*basis_func.start + 
+            t*basis_func.end - basis_func.mid, m_vec))
+        return quad(func, 0, 1)[0]
 
 def lhs_w_matrix_element(m_vec, u_vec, expansion_point):
     return np.prod(np.power(u_vec - expansion_point, m_vec))
