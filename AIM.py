@@ -123,7 +123,7 @@ def find_grid_mapping(grid, basis_func, degree = 0):
 
     box_nodes = grid.box_nodes(basis_func.mid, degree)
 
-    abs_loc = lambda x: grid.absolute_location(x)
+    abs_loc = grid.absolute_location
     lhs = np.array([
         [lhs_w_matrix_element(m_pair, basis_func.mid, abs_loc(node.location)) 
             for node in box_nodes]
