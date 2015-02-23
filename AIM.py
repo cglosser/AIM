@@ -82,6 +82,9 @@ class Grid(object):
         return axis
     
     def green_matrix(self, green_function):
+        """Construct a block-Toeplitz matrix giving Node-Node interactions
+        from a given g(|x - x'|).
+        """
         g_mat = np.zeros([self.num_nodes, self.num_nodes], dtype=complex)
         for node1 in self.nodes:
             for node2 in self.nodes:
