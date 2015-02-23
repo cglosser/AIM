@@ -169,4 +169,4 @@ def construct_lambda(grid, basis_funcs, degree = 0):
         for col, projection in find_grid_mapping(grid, pulse_fn, degree):
             lambda_matrix[row, col] = projection
 
-    return lambda_matrix.asformat("coo")
+    return lambda_matrix.asformat("csr")
