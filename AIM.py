@@ -8,9 +8,16 @@ from collections     import namedtuple
 
 BasisFunction = namedtuple("BasisFunction", ["start", "end", "mid"])
 
-
 class Grid(object):
     Node = namedtuple("Node", ["location","index"])
+
+    class BoundaryError(Exception):
+        def __init__(self, point):
+            self.point = point
+            self.msg   = "grid point " + str(point)
+
+        def __str__(self):
+            return self.msg
 
     def __init__(self, grid_dim):
         self.grid_dim     = grid_dim
@@ -25,6 +32,8 @@ class Grid(object):
 
     def __node_index(self, location):
         """Convert an integral (x, y) grid coordinate to its unique index."""
+        if any([i < 0 or i >= self.grid_dim for i in location]):
+            raise Grid.BoundaryError(location)
         return location[0] + self.grid_dim*location[1]
 
     def absolute_location(self, grid_coord):
