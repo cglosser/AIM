@@ -82,9 +82,6 @@ class Grid(object):
         return axis
     
     def green_matrix(self, green_function):
-        """Construct a block-Toeplitz matrix giving Node-Node interactions
-        from a given g(|x - x'|).
-        """
         g_mat = np.zeros([self.num_nodes, self.num_nodes], dtype=complex)
         for node1 in self.nodes:
             for node2 in self.nodes:
@@ -168,9 +165,8 @@ def construct_lambda(grid, basis_funcs, degree = 0):
     num_grid_points = grid.num_nodes
 
     lambda_matrix = dok_matrix((num_basis_funcs, num_grid_points))
-    for row, pulse in enumerate(basis_funcs):
-        for col, projection in find_grid_mapping(grid, pulse, degree):
-            print row, col, projection
+    for row, pulse_fn in enumerate(basis_funcs):
+        for col, projection in find_grid_mapping(grid, pulse_fn, degree):
             lambda_matrix[row, col] = projection
 
     return lambda_matrix.asformat("coo")
