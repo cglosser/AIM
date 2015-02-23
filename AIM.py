@@ -130,9 +130,22 @@ def find_grid_mapping(grid, basis_func, degree = 0):
             for m_pair in combo_m 
     ])
 
-    print lhs
-
     rhs = np.array([rhs_q_matrix_element(m_vec, basis_func) 
         for m_vec in combo_m])
 
-    return np.linalg.solve(lhs, rhs)
+    indices = [node.index for node in box_nodes]
+    solution = np.linalg.solve(lhs, rhs)
+
+    return zip(indices, solution)
+
+def construct_lambda(grid, basis_funcs, degree = 0):
+    num_basis_funcs = len(basis_funcs)
+    num_grid_points = grid.num_nodes
+
+    lambda_matrix = dok_matrix((num_basis_funcs, num_grid_points))
+    for row, bf in enumerate(basis_funcs):
+        for col, projection in find_grid_mapping(grid, bf):
+            print row, col, projection
+            lambda_matrix[row, col] = projection
+
+    return lambda_matrix
