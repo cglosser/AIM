@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy.linalg    import norm
 from scipy.integrate import quad
+from scipy.sparse    import dok_matrix, coo_matrix
 from scipy.special   import hankel2
 from collections     import namedtuple
 
@@ -11,10 +12,10 @@ BasisFunction = namedtuple("BasisFunction", ["start", "end", "mid"])
 class Grid(object):
     Node = namedtuple("Node", ["location","index"])
 
-    def __init__(self, grid_dim, size = 1):
-        self.size         = size
+    def __init__(self, grid_dim):
         self.grid_dim     = grid_dim
-        self.grid_spacing = size/float(grid_dim - 1)
+        self.num_nodes    = grid_dim**2
+        self.grid_spacing = 1/float(grid_dim - 1)
 
         self.nodes = [Grid.Node(np.array([x, y]), self.__node_index([x, y]))
                 for y in range(grid_dim) for x in range(grid_dim)]
