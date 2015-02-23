@@ -80,8 +80,21 @@ class Grid(object):
         for idx, point in enumerate(self.grid_points): 
             axis.annotate(idx, point)
         return axis
+    
+    def green_matrix(self, green_function):
+        g_mat = np.zeros([self.num_nodes, self.num_nodes], dtype=complex)
+        for node1 in self.nodes:
+            for node2 in self.nodes:
+                if node1 is node2:
+                    g_mat[node1.index, node2.index] = 1
+                else:
+                    pos1 = self.absolute_location(node1.location)
+                    pos2 = self.absolute_location(node2.location)
+                    g_mat[node1.index, node2.index] = green_function(pos2, pos1)
 
-def green_2d(k, vec_1, vec_2):
+        return g_mat
+
+def green_2d(vec_1, vec_2, k = 1):
     return hankel2(0, k*norm(vec_1 - vec_2))/4j
         
 def draw_object_and_grid(points, grid):
