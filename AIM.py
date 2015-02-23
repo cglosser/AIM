@@ -165,9 +165,9 @@ def construct_lambda(grid, basis_funcs, degree = 0):
     num_grid_points = grid.num_nodes
 
     lambda_matrix = dok_matrix((num_basis_funcs, num_grid_points))
-    for row, bf in enumerate(basis_funcs):
-        for col, projection in find_grid_mapping(grid, bf):
+    for row, pulse in enumerate(basis_funcs):
+        for col, projection in find_grid_mapping(grid, pulse, degree):
             print row, col, projection
             lambda_matrix[row, col] = projection
 
-    return lambda_matrix
+    return lambda_matrix.asformat("coo")
