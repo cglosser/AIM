@@ -1,6 +1,8 @@
 *.*.swp
 .ipynb_checkpoints
 *.ipynb
+*.out
+*.dat
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
