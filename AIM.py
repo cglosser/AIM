@@ -1,8 +1,7 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from numpy.linalg    import norm
 from scipy.integrate import quad
-from scipy.sparse    import dok_matrix, coo_matrix
+from scipy.sparse    import dok_matrix
 from scipy.special   import hankel2
 from collections     import namedtuple
 import plot
