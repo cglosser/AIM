@@ -5,6 +5,8 @@ from scipy.integrate import quad
 from scipy.sparse    import dok_matrix, coo_matrix
 from scipy.special   import hankel2
 from collections     import namedtuple
+import plot
+import toeplitz as toep
 
 BasisFunction = namedtuple("BasisFunction", ["start", "end", "mid"])
 
@@ -58,29 +60,6 @@ class Grid(object):
             np.array([dx, dy]))] for dy in delta_range for dx in delta_range]
         return indices
 
-    def draw_points(self, axis = None):
-        if axis is None: 
-            axis = plt.gca()
-        x_coords, y_coords = self.grid_points.transpose()
-        axis.scatter(x_coords, y_coords, s=100, alpha=0.2)
-        return axis
-    
-    def draw_lines(self, axis = None):
-        if axis is None: 
-            axis = plt.gca()
-        x_coords, y_coords = self.grid_points.transpose()
-        axis.set_xticks(x_coords)
-        axis.set_yticks(y_coords)
-        axis.grid()
-        return axis
-
-    def annotate_points(self, axis = None):
-        if axis is None:
-            axis = plt.gca()
-        for idx, point in enumerate(self.grid_points): 
-            axis.annotate(idx, point)
-        return axis
-    
     def green_matrix(self, green_function):
         g_mat = np.zeros([self.num_nodes, self.num_nodes], dtype=complex)
         for node1 in self.nodes:
@@ -96,16 +75,6 @@ class Grid(object):
 
 def green_2d(vec_1, vec_2, k = 1):
     return hankel2(0, k*norm(vec_1 - vec_2))/4j
-        
-def draw_object_and_grid(points, grid):
-    fig    = plt.figure()
-    subfig = fig.add_subplot(111)
-
-    x_obj,  y_obj  = points.transpose()
-    x_grid, y_grid = grid.grid_points.transpose()
-    
-    subfig.scatter(x_obj, y_obj, s=25, c='r', alpha=0.8)
-    subfig.scatter(x_grid, y_grid, s=100, alpha=0.2)
 
 def shift_to_first_quadrant(points):
     x_bounds = np.array([np.min(points[:, 0]), np.max(points[:, 0])])
