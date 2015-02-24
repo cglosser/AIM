@@ -1,6 +1,6 @@
 import numpy as np
 from numpy.linalg    import norm
-from scipy.integrate import quad
+from scipy.integrate import quad, dblquad
 from scipy.sparse    import dok_matrix
 from scipy.special   import hankel2
 from collections     import namedtuple
@@ -137,3 +137,20 @@ def construct_lambda(grid, basis_funcs, degree = 0):
             lambda_matrix[row, col] = projection
 
     return lambda_matrix.asformat("csr")
+
+def naiive_interaction_matrix(green_function, basis_funcs):
+    a_mat = np.zeros((len(basis_funcs), len(basis_funcs)), dtype=complex)
+    for i, b1 in enumerate(basis_funcs):
+        for j, b2 in enumerate(basis_funcs):
+            if i == j:
+                a_mat[i, j] = 1
+            else:
+                def func(t1, t2):
+                    r1 = (1 - t1)*b1.start + t1*b1.end
+                    r2 = (1 - t2)*b2.start + t2*b2.end
+                    return green_function(r1, r2)
+                q = dblquad(func, 0, 1, lambda x: 0, lambda x: 1)
+                print i, j, " | ", q
+                a_mat[i, j] = q[0]
+
+    return a_mat
