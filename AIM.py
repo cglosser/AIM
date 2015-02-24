@@ -116,7 +116,6 @@ def shift_to_first_quadrant(points):
     return (points - np.array([x_bounds[0], y_bounds[0]]))/scale_factor
     
 def sample_unit_circle(num_pts):
-    """ Sample a circle of diameter = 1 in the first quadrant."""
     angles = np.arange(0, 2*np.pi, 2*np.pi/num_pts)
     return np.array([(np.cos(theta), np.sin(theta)) for theta in angles])
 
