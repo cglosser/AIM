@@ -149,8 +149,10 @@ def naiive_interaction_matrix(green_function, basis_funcs):
                     r1 = (1 - t1)*b1.start + t1*b1.end
                     r2 = (1 - t2)*b2.start + t2*b2.end
                     return green_function(r1, r2)
-                q = dblquad(func, 0, 1, lambda x: 0, lambda x: 1)
-                print i, j, " | ", q
-                a_mat[i, j] = q[0]
+
+                zero, one = lambda x: 0, lambda x: 1
+                real_part = dblquad(lambda x,y: np.real(func(x,y)), 0, 1, zero, one)[0]
+                imag_part = dblquad(lambda x,y: np.imag(func(x,y)), 0, 1, zero, one)[0]
+                a_mat[i, j] = real_part + 1j*imag_part
 
     return a_mat
