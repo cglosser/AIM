@@ -46,31 +46,12 @@ def AIM_trials(grid_dim, num_trials = 5):
     return
 
 def main():
-    pts   = AIM.sample_unit_circle(NUM_BASIS)
-    basis = AIM.build_basis_set(AIM.shift_to_first_quadrant(pts))
-    grid  = AIM.Grid(12)
+    print "Testing AIM implementation..."
+    AIM_trials(12)
 
-    r_vec = np.random.rand(NUM_BASIS)
-
-    m1 = AIM.naiive_interaction_matrix(AIM.green_2d, basis).dot(r_vec)
-    lam = AIM.construct_lambda(grid, basis)
-    m2 = lam.dot(AIM.green_matrix(AIM.green_2d, grid)).dot(lam.transpose().toarray()).dot(r_vec)
-
-    print m1
-    print m2
-
-    print "=="*50
-    print m2 - m1
-    print "RMS:", np.sqrt(np.sum(np.abs(m2-m1))/NUM_BASIS)
-
-    #grid  = AIM.Grid(NUM_GRID)
-
-    #print "Testing AIM implementation..."
-    #AIM_trials(12)
-
-    #print
-    #print "Testing naiive implementation..."
-    #naiive_trials()
+    print
+    print "Testing naiive implementation..."
+    naiive_trials()
 
 if __name__ == "__main__":
     main()
